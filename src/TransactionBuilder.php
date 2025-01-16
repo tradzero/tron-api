@@ -309,6 +309,71 @@ class TransactionBuilder
     }
 
     /**
+     * Delegate bandwidth or energy resources to other accounts in Stake2.0.
+     * Will delegate bandwidth OR Energy resources to other accounts.
+     *
+     * @param string $owner_address
+     * @param string $resource
+     * @param string $receiver_address
+     * @param int $balance
+     * @param bool $lock
+     * @param int $lock_period
+     * @return array
+     * @throws TronException
+     */
+    public function delegateResource(string $owner_address = null, string $resource = 'BANDWIDTH', string $receiver_address = null,int $balance = 0, bool $lock = false, int $lock_period = 0)
+    {
+        if(empty($owner_address) or empty($receiver_address)) {
+            throw new TronException('Address not specified');
+        }
+        if (!in_array($resource, ['BANDWIDTH', 'ENERGY'])) {
+            throw new TronException('Invalid resource provided: Expected "BANDWIDTH" or "ENERGY"');
+        }
+        if (!is_int($balance) or !is_int($lock_period)) {
+            throw new TronException('Invalid balance or lock_period provided');
+        }
+        if(!is_bool($lock)) {
+            throw new TronException('Invalid lock value provided');
+        }
+
+        return $this->tron->getManager()->request(
+            'wallet/delegateresource',
+            [
+            'owner_address' => $this->tron->address2HexString($owner_address),
+            'resource' => $resource,
+            'receiver_address' => $this->tron->address2HexString($receiver_address),
+            'balance' => $this->tron->toTron($balance),
+            'lock' => $lock,
+            'lock_period' => $lock_period,
+            ],
+        );
+    }
+
+    public function undelegateResource(string $owner_address = null, string $resource = 'BANDWIDTH', string $receiver_address = null,int $balance = 0)
+    {
+        if(empty($owner_address) or empty($receiver_address)) {
+            throw new TronException('Address not specified');
+        }
+        if (!in_array($resource, ['BANDWIDTH', 'ENERGY'])) {
+            throw new TronException('Invalid resource provided: Expected "BANDWIDTH" or "ENERGY"');
+        }
+        if (!is_int($balance)) {
+            throw new TronException('Invalid balance');
+        }
+
+
+        return $this->tron->getManager()->request(
+            'wallet/undelegateresource',
+            [
+            'owner_address' => $this->tron->address2HexString($owner_address),
+            'resource' => $resource,
+            'receiver_address' => $this->tron->address2HexString($receiver_address),
+            'balance' => $this->tron->toTron($balance),
+            ],
+        );
+    }
+
+    /**
      * Withdraw Super Representative rewards, useable every 24 hours.
      *
      * @param string $owner_address
