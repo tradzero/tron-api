@@ -1375,6 +1375,24 @@ class Tron implements TronInterface
         ]);
     }
 
+    public function getEnergyPrices($latest = true)
+    {
+        $priceHistory = $this->manager->request('/wallet/getenergyprices', []);
+        $prices = $priceHistory['prices'];
+        $prices = \explode(',', $prices);
+
+        $pricesData = [];
+        foreach ($prices as $price) {
+            $priceData = \explode(':', $price);
+            $pricesData[] = $priceData;
+        }
+        if ($latest) {
+            $length = count($prices);
+            return $pricesData[$length - 1][1];
+        }
+        return $pricesData;
+    }
+
     /**
      * Create a new account
      *
