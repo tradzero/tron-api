@@ -621,7 +621,7 @@ return $trc20;
                                             $function,
                                             $params = [],
                                             $address = '410000000000000000000000000000000000000000',
-                                            $result = false)
+                                            $returnFullResult = false)
     {
         $func_abi = [];
         foreach($abi as $key =>$item) {
@@ -669,7 +669,7 @@ return $trc20;
             throw new TronException('No result field in response. Raw response:'.print_r($result,true));
         }
         if(isset($result['result']['result'])) {
-            if ($result) {
+            if ($returnFullResult) {
                 return $result;
             }
             if(count($func_abi['outputs']) >= 0 && isset($result['constant_result'])) {
