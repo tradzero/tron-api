@@ -53,14 +53,14 @@ class TRC20Contract
      * The smart contract which issued TRC20 Token
      *
      * @var string
-    */
+     */
     private string $contractAddress;
 
     /**
      * ABI Data
      *
      * @var string|null
-    */
+     */
     private $abiData;
 
     /**
@@ -81,7 +81,7 @@ class TRC20Contract
      * Total Supply
      *
      * @var string|null
-    */
+     */
     private ?string $_totalSupply = null;
 
     /**
@@ -96,8 +96,8 @@ class TRC20Contract
         $this->_tron = $tron;
 
         // If abi is absent, then it takes by default
-        if(is_null($abi)) {
-            $abi = file_get_contents(__DIR__.'/trc20.json');
+        if (is_null($abi)) {
+            $abi = file_get_contents(__DIR__ . '/trc20.json');
         }
 
         $this->abiData = json_decode($abi, true);
@@ -247,7 +247,7 @@ class TRC20Contract
      */
     public function balanceOf(string $address = null, bool $scaled = true): string
     {
-        if(is_null($address))
+        if (is_null($address))
             $address = $this->_tron->address['base58'];
 
         $addr = str_pad($this->_tron->address2HexString($address), 64, "0", STR_PAD_LEFT);
@@ -263,6 +263,26 @@ class TRC20Contract
         return $scaled ? $this->decimalValue($balance, $this->decimals()) : $balance;
     }
 
+    public function getTransferEnergyInfo(string $to, string $amount, string $from = null): array
+    {
+        if ($from == null) {
+            $from = $this->_tron->address['base58'];
+        }
+
+        $tokenAmount = bcmul($amount, bcpow("10", (string)$this->decimals(), 0), 0);
+
+        $transfer = $this->_tron->getTransactionBuilder()
+            ->triggerConstantContract(
+                $this->abiData,
+                $this->_tron->address2HexString($this->contractAddress),
+                'transfer',
+                [$this->_tron->address2HexString($to), $tokenAmount],
+                true
+            );
+
+        return $transfer;
+    }
+
     /**
      * Send TRC20 contract
      *
@@ -275,15 +295,15 @@ class TRC20Contract
      */
     public function transfer(string $to, string $amount, string $from = null): array
     {
-        if($from == null) {
+        if ($from == null) {
             $from = $this->_tron->address['base58'];
         }
 
         $feeLimitInSun = bcmul((string)$this->feeLimit, (string)self::TRX_TO_SUN);
 
-        if (!is_numeric($this->feeLimit) OR $this->feeLimit <= 0) {
+        if (!is_numeric($this->feeLimit) or $this->feeLimit <= 0) {
             throw new TRC20Exception('fee_limit is required.');
-        } else if($this->feeLimit > 1000) {
+        } else if ($this->feeLimit > 1000) {
             throw new TRC20Exception('fee_limit must not be greater than 1000 TRX.');
         }
 
@@ -328,7 +348,7 @@ class TRC20Contract
     public function getTransactionInfoByContract(array $options = []): array
     {
         return $this->_tron->getManager()
-            ->request("v1/contracts/{$this->contractAddress}/transactions?".http_build_query($options), [],'get');
+            ->request("v1/contracts/{$this->contractAddress}/transactions?" . http_build_query($options), [], 'get');
     }
 
     /**
@@ -339,7 +359,7 @@ class TRC20Contract
     public function getTRC20TokenHolderBalance(array $options = []): array
     {
         return $this->_tron->getManager()
-            ->request("v1/contracts/{$this->contractAddress}/tokens?".http_build_query($options), [],'get');
+            ->request("v1/contracts/{$this->contractAddress}/tokens?" . http_build_query($options), [], 'get');
     }
 
     /**
@@ -397,7 +417,7 @@ class TRC20Contract
      * @param int $fee_limit
      * @return TRC20Contract
      */
-    public function setFeeLimit(int $fee_limit) : TRC20Contract
+    public function setFeeLimit(int $fee_limit): TRC20Contract
     {
         $this->feeLimit = $fee_limit;
         return $this;
