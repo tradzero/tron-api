@@ -277,6 +277,7 @@ class TRC20Contract
                 $this->_tron->address2HexString($this->contractAddress),
                 'transfer',
                 [$this->_tron->address2HexString($to), $tokenAmount],
+                $this->_tron->address2HexString($from),
                 true
             );
 
